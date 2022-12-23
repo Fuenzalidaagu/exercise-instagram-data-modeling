@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -8,23 +8,85 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
+class Usuario(Base):
+    __tablename__ = 'usuarios'
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+    nombre = Column(String)
+    apellido = Column(String)
+    email = Column(String)
+    nombre_usuario = Column(String)
+    contraseña = Column(String)
+    foto_perfil = Column(String)
+    fecha_nacimiento = Column(DateTime)
+    genero = Column(String)
+    pais = Column(String)
+    ciudad = Column(String)
+    descripcion_perfil = Column(String)
+    fecha_registro = Column(DateTime)
+    ultimo_inicio_sesion = Column(DateTime)
+    
+class Publicacion(Base):
+    __tablename__ = 'publicaciones'
+    id = Column(Integer, primary_key=True)
+    contenido = Column(String)
+    fecha_hora = Column(DateTime)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id'))
+    usuario = relationship("Usuario", back_populates="publicaciones")
+    
+class Comentario(Base):
+    __tablename__ = 'comentarios'
+    id = Column(Integer, primary_key=True)
+    contenido = Column(String)
+    fecha_hora = Column(DateTime)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id'))
+    id_publicacion = Column(Integer, ForeignKey('publicaciones.id'))
+    usuario = relationship("Usuario", back_populates="comentarios")
+    publicacion = relationship("Publicacion", back_populates="comentarios")
+    
+class MeGusta(Base):
+    __tablename__ = 'me_gusta'
+    id = Column(Integer, primary_key=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id'))
+    id_publicacion = Column(Integer, ForeignKey('publicaciones.id'))
+    fecha_hora = Column(DateTime)
+    usuario = relationship("Usuario", back_populates="me_gusta")
+    publicacion = relationship("Publicacion", back_populates="me_gusta")
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class Notificacion(Base):
+    __tablename__ = 'notificaciones'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    tipo = Column(String)
+    fecha_hora = Column(DateTime)
+    id_usuario_envio = Column(Integer, ForeignKey('usuarios.id'))
+    id_usuario_recepcion = Column(Integer, ForeignKey('usuarios.id'))
+    usuario_envio = relationship("Usuario", foreign_keys=[id_usuario_envio])
+    usuario_recepcion = relationship("Usuario", foreign_keys=[id_usuario_recepcion])
+    
+class Seguidor(Base):
+    __tablename__ = 'seguidores'
+    id = Column(Integer, primary_key=True)
+    id_usuario_seguidor = Column(Integer, ForeignKey('usuarios.id'))
+    id_usuario_seguido = Column(Integer, ForeignKey('usuarios.id'))
+    fecha_hora = Column(DateTime)
+    usuario_seguidor = relationship("Usuario", foreign_keys=[id_usuario_seguidor])
+    usuario_seguido = relationship("Usuario", foreign_keys=[id_usuario_seguido])
+    
+class Etiqueta(Base):
+    __tablename__ = 'etiquetas'
+    id = Column(Integer, primary_key=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id'))
+    id_publicacion = Column(Integer, ForeignKey('publicaciones.id'))
+    usuario = relationship("Usuario")
+    publicacion = relationship("Publicacion")
+    
+class Bloqueado(Base):
+    __tablename__ = 'bloqueados'
+    id = Column(Integer, primary_key=True)
+    id_usuario_bloqueador = Column(Integer, ForeignKey('usuarios.id'))
+    id_usuario_bloqueado = Column(Integer, ForeignKey('usuarios.id'))
+    fecha_hora = Column(DateTime)
+    usuario_bloqueador = relationship("Usuario", foreign_keys=[id_usuario_bloqueador])
+    usuario_bloqueado = relationship("Usuario", foreign_keys=[id_usuario_bloqueado])
 
     def to_dict(self):
         return {}
